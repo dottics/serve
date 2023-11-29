@@ -17,6 +17,8 @@ type ContextHandlerFunc func(*context.Context, http.ResponseWriter, *http.Reques
 // stop and exit. Where true == stop.
 type ContextMiddleware func(*context.Context, http.ResponseWriter, *http.Request) (bool, http.HandlerFunc)
 
+// Route is the structure of a route. patternRegex is the regex pattern used to
+// match the request URL with the route pattern.
 type Route struct {
 	method       string
 	whitelisted  bool
@@ -26,6 +28,7 @@ type Route struct {
 	params       []Param
 }
 
+// Mux extends the http.ServeMux to add routes and middleware.
 type Mux struct {
 	http.ServeMux
 	middleware map[int]ContextMiddleware
@@ -55,10 +58,13 @@ func NewMux() *Mux {
 			route.handler(con, w, r)
 			return // ensure handler function terminates
 		}
-		if handler != nil {
+		// middleware stops execution then run the handler provided by the
+		// middleware
+		if stop && handler != nil {
 			handler(w, r)
 			return
 		}
+		// default if no middleware stop handler is provided
 		w.WriteHeader(405)
 		_, _ = w.Write([]byte(`Method Not Allowed`))
 		return // ensure handler function terminates
@@ -66,6 +72,8 @@ func NewMux() *Mux {
 	return m
 }
 
+// handlerContext creates the context and populates with the basic context
+// values such as: URL params; whitelisted.
 func (m *Mux) handlerContext(route Route, r *http.Request) *context.Context {
 	ctx := context.Background()
 	params := ParsePath(r.URL.Path, route.patternRegex, route.params)
@@ -74,6 +82,8 @@ func (m *Mux) handlerContext(route Route, r *http.Request) *context.Context {
 	return &con
 }
 
+// findHandler looks at the declared handlers and finds the best match for the
+// request URI, and returns the Route to handle the request.
 func (m *Mux) findHandler(r *http.Request) *Route {
 	// if no routes are declared on this method, then end
 	if routes := m.routes[r.Method]; len(routes) == 0 {
@@ -83,8 +93,7 @@ func (m *Mux) findHandler(r *http.Request) *Route {
 	for _, route := range m.routes[r.Method] {
 		// we want to be able to match two patterns, namely
 		// 1. /some/path
-		// 2. /some/path/
-		if route.patternRegex.MatchString(r.URL.Path) {
+		/* 2. /some/path/*/ if route.patternRegex.MatchString(r.URL.Path) {
 			possibleRoutes = append(possibleRoutes, route)
 		}
 	}
@@ -103,10 +112,13 @@ func (m *Mux) findHandler(r *http.Request) *Route {
 	return nil
 }
 
+// Use adds middleware to the execution stack. The sequence in which middleware
+// is added is the same sequence in which they will be executed.
 func (m *Mux) Use(middleware ContextMiddleware) {
 	m.middleware[len(m.middleware)+1] = middleware
 }
 
+// runMiddleware runs the sequence of middleware functions.
 func (m *Mux) runMiddleware(c *context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
 	for _, mid := range m.middleware {
 		stop, handler := mid(c, w, r)
