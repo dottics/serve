@@ -1,0 +1,399 @@
+openapi: 3.0.3
+
+info: 
+  title: cia-channel-service
+  version: v1
+  description: Api Description
+  license: 
+    name: Capitec Bank
+  contact: 
+    name: "Team Contact Details"
+tags: 
+  - name: health
+    description: Default health checks.
+  - name: model
+    description: Large Language Models (LLM's) available.
+  - name: conversation
+    description: Engaging in a conversation with a LLM.
+  - name: history
+    description: Previous conversations or conversation.
+paths: 
+  /healthy: 
+    get: 
+      summary: Get indicator of dependency health
+      operationId: handlers/serviceHealth/healthy
+      x-sla: 1500
+      tags: 
+        - health
+      responses: 
+        '204': 
+          description: Expected response when service dependencies are healthy.
+        '501': 
+          description: Expected response when service dependency checks aren't implemented.
+        '503': 
+          description: Expected response when a service dependency isn't healthy.
+  /health-report: 
+    get: 
+      summary: List status of all dependencies
+      operationId: handlers/serviceHealth/healthReport
+      x-sla: 1500
+      tags: 
+        - health
+      responses: 
+        '200': 
+          description: A list of dependencies and their health status.
+          content: 
+            application/json: 
+              schema: 
+                $ref: "#/components/schemas/HealthStatusReport"
+  /model: 
+    get: 
+      summary: all available models.
+      operationId: handlers/models
+      x-sla: 1500
+      tags: 
+        - model
+      responses: 
+        '200': 
+          description: Successful operation
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties: 
+                  models: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Model'
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+  /conversation: 
+    get: 
+      summary: start a conversation.
+      operationId: handlers/conversation/startConversation
+      x-sla: 1500
+      tags: 
+        - conversation
+      parameters: 
+        - in: query
+          name: modelId
+          schema: 
+            type: string
+            example: 'JD2djTcDijYKELR5mwJgpii'
+      responses: 
+        '200': 
+          description: Successful operation
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties: 
+                  conversationId: 
+                    type: string
+                    example: 'fYsGxKFDRj7aXFoZEY3Vwx'
+                  messages: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Message'
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+        '404': 
+          $ref: '#/components/responses/NotFound'
+    post: 
+      summary: ask a question.
+      operationId: handlers/conversation/askQuestion
+      x-sla: 1500
+      tags: 
+        - conversation
+      requestBody: 
+        description: Optional description in *Markdown*
+        required: true
+        content: 
+          application/json: 
+            schema: 
+              type: object
+              properties: 
+                modelId: 
+                  type: string
+                  example: 'JD2djTcDijYKELR5mwJgpii'
+                text: 
+                  type: string
+                  example: 'how do I open an account?'
+      responses: 
+        '200': 
+          description: Successful operation
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties: 
+                  conversationId: 
+                    type: string
+                    example: 'fYsGxKFDRj7aXFoZEY3Vwx'
+                  question: 
+                    type: string
+                    example: 'fYsGxKFDRj7aXFoZEY3Vwx'
+                  answer: 
+                    $ref: '#/components/schemas/Conversation'
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+        '404': 
+          $ref: '#/components/responses/NotFound'
+        '400': 
+          $ref: '#/components/responses/BadRequest'
+  /conversation/rate: 
+    post: 
+      summary: rate an answer.
+      operationId: handlers/conversation/rateAnswer
+      x-sla: 1500
+      tags: 
+        - conversation
+      requestBody: 
+        description: Required parameters to rate a conversation
+        required: true
+        content: 
+          application/json: 
+            schema: 
+              type: object
+              properties: 
+                conversationId: 
+                  type: string
+                  example: 'fYsGxKFDRj7aXFoZEY3Vwx'
+                rating: 
+                  type: integer
+                  example: 1
+      responses: 
+        '200': 
+          description: Successful operation
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+        '404': 
+          $ref: '#/components/responses/NotFound'
+        '400': 
+          $ref: '#/components/responses/BadRequest'
+  /history: 
+    get: 
+      summary: all historic or past conversations.
+      operationId: handlers/history/conversations
+      x-sla: 1500
+      tags: 
+        - history
+      parameters: 
+        - in: query
+          name: from
+          description: Search from date. Format YYYY-MM-DD.
+          schema: 
+            type: string
+          required: true
+          example: '2023-10-01'
+        - in: query
+          name: to
+          description: Search to date. Format YYYY-MM-DD.
+          schema: 
+            type: string
+          required: true
+          example: '2023-11-10'
+      responses: 
+        '200': 
+          description: Successful operation
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties: 
+                  conversations: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/ConversationSummary'
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+        '404': 
+          $ref: '#/components/responses/NotFound'
+  /history/{conversationId}: 
+    get: 
+      summary: all historic or past conversations.
+      parameters: 
+        - in: path
+          name: conversationId
+          schema: 
+            type: string
+          required: true
+          description: The conversation ID for conversation to be fetched.
+      operationId: handlers/history/conversation
+      x-sla: 1500
+      tags: 
+        - history
+      responses: 
+        '200': 
+          description: Successful operation
+          content: 
+            application/json: 
+              schema: 
+                type: object
+                properties: 
+                  conversation: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Conversation'
+        '401': 
+          $ref: '#/components/responses/UnauthorizedError'
+        '404': 
+          $ref: '#/components/responses/NotFound'
+
+components: 
+  responses: 
+    UnauthorizedError: 
+      description: Resource not found
+      content: 
+        application/json: 
+          schema: 
+            type: object
+            properties: 
+              message: 
+                type: string
+                example: 'Authentication required to access this resource'
+    NotFound: 
+      description: Resource not found
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/NotFoundError'
+    BadRequest: 
+      description: Validation error
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/ValidationError'
+  schemas: 
+    HealthStatus: 
+      required: 
+        - name
+        - status
+      properties: 
+        name: 
+          type: string
+        status: 
+          type: string
+    HealthStatusReport: 
+      type: array
+      items: 
+        $ref: "#/components/schemas/HealthStatus"
+    Model: 
+      type: object
+      properties: 
+        id: 
+          type: number
+          example: 1
+        model_id: 
+          type: string
+          example: 'JD2djTcDijYKELR5mwJgpii'
+        name: 
+          type: string
+          example: 'faq'
+        description: 
+          type: string
+          example: 'base model'
+        active: 
+          type: boolean
+          example: true
+        create_date: 
+          type: string
+          example: '2023-10-09T12:52:09.775Z'
+    ConversationSummary: 
+      type: object
+      properties: 
+        conversation_id: 
+          type: string
+          example: 'convId123'
+        model_id: 
+          type: integer
+          example: 1
+        prompt: 
+          type: string
+          example: 'Let me be the judge of that, doctor.'
+        response: 
+          type: string
+          example: 'You cannot stop me, Mr. Bond.'
+        conversation_index: 
+          type: integer
+          example: 5
+        last_date: 
+          type: string
+          example: '2023-10-09T11:37:43.235Z'
+    Conversation: 
+      type: object
+      properties: 
+        id: 
+          type: integer
+          example: 1
+        model_id: 
+          type: integer
+          example: 1
+        cp_number: 
+          type: string
+          example: 'cpXXXXXX'
+        first_name: 
+          type: string
+          example: 'james'
+        last_name: 
+          type: string
+          example: 'bond'
+        conversation_id: 
+          type: string
+          example: 'convId123'
+        conversation_index: 
+          type: integer
+          example: 1
+        prompt: 
+          type: string
+          example: 'the question'
+        response: 
+          type: string
+          example: 'the answer'
+        rating: 
+          type: integer
+          example: -1
+        create_date: 
+          type: string
+          example: '2023-10-09T11:37:43.235Z'
+    Message: 
+      type: object
+      properties: 
+        text: 
+          type: string
+          example: 'Hello, you have reached Customer Support for Capitec Bank. How may I assist you today?'
+        speaker: 
+          type: string
+          example: 'agent'
+        time: 
+          type: number
+          example: 1696927699013
+        id: 
+          type: string
+          example: 'g27JYxeKeyW4ouaAszpGsC'
+        rich_content: 
+          type: string
+          example: null
+        debug_messages: 
+          type: string
+          example: null
+    NotFoundError: 
+      type: object
+      properties: 
+        detail: 
+          type: string
+          example: 'not found'
+    ValidationError: 
+      type: object
+      properties: 
+        code: 
+          type: integer
+          example: 1002
+        errorCodes: 
+          type: array
+          items: 
+            type: integer
+            example: 0
+        message: 
+          type: string
+          example: '<<error message>>'
