@@ -1,0 +1,20 @@
+openapi: 3.0.3
+
+info: 
+  title: sample-service
+  version: v1
+  description: API Description
+  license: 
+    name: Dottics
+  contact: 
+    name: "The Team"
+
+paths: 
+  /: 
+    get: 
+      summary: Push proactive message to a queue
+      tags: 
+        - example
+      responses: 
+        '204': 
+          description: Expected response.
