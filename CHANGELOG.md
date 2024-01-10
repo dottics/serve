@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2024-01-10
+
+### Updated
+
+- Updated the parsing of the route context to ensure the correct context is
+  passed to the handler.
+
 ## [0.0.2] - 2024-01-10
 
 ### Updated
