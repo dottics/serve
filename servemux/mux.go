@@ -77,9 +77,9 @@ func NewMux() *Mux {
 func (m *Mux) handlerContext(route Route, r *http.Request) *context.Context {
 	ctx := context.Background()
 	params := ParsePath(r.URL.Path, route.patternRegex, route.params)
-	con := context.WithValue(ctx, "params", params)
-	con = context.WithValue(ctx, "whitelisted", route.whitelisted)
-	return &con
+	ctx = context.WithValue(ctx, "params", params)
+	ctx = context.WithValue(ctx, "whitelisted", route.whitelisted)
+	return &ctx
 }
 
 // findHandler looks at the declared handlers and finds the best match for the
@@ -93,7 +93,8 @@ func (m *Mux) findHandler(r *http.Request) *Route {
 	for _, route := range m.routes[r.Method] {
 		// we want to be able to match two patterns, namely
 		// 1. /some/path
-		/* 2. /some/path/*/ if route.patternRegex.MatchString(r.URL.Path) {
+		// 2. /some/path/*/
+		if route.patternRegex.MatchString(r.URL.Path) {
 			possibleRoutes = append(possibleRoutes, route)
 		}
 	}
