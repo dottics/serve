@@ -23,7 +23,7 @@ func CompilePathRegex(pattern string) (string, []Param) {
 		params[i] = Param{
 			index:       i,
 			name:        name,
-			patternName: fmt.Sprintf(`(?P<%s>[a-zA-Z]+)`, name),
+			patternName: fmt.Sprintf(`(?P<%s>[a-zA-Z-_]+)`, name),
 		}
 	}
 
