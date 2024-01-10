@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1] - 2024-01-10
+
+### Updated
+
+- The pattern match to allow for `-` and `_` in the URL path parameters.
+
 ## [0.0.0] - 2023-11-29
 
 ### Added
