@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2024-01-17
+
+### Updated
+
+- The `servemux.Param` type to export the `Name` and `Value` fields so that
+  they can be used for testing when the packages are installed.
+
 ## [0.0.6] - 2024-01-17
 
 ### Fixed

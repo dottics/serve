@@ -9,8 +9,8 @@ import (
 type Param struct {
 	index       int
 	patternName string
-	name        string
-	value       string
+	Name        string
+	Value       string
 }
 
 func CompilePathRegex(pattern string) (string, []Param) {
@@ -22,14 +22,14 @@ func CompilePathRegex(pattern string) (string, []Param) {
 		name := strings.Trim(p, "{}")
 		params[i] = Param{
 			index:       i,
-			name:        name,
+			Name:        name,
 			patternName: fmt.Sprintf(`(?P<%s>[a-zA-Z-_0-9]+)`, name),
 		}
 	}
 
 	patternRegex := pattern
 	for _, p := range params {
-		reVal := regexp.MustCompile(fmt.Sprintf("{%s}", p.name))
+		reVal := regexp.MustCompile(fmt.Sprintf("{%s}", p.Name))
 		patternRegex = reVal.ReplaceAllString(patternRegex, p.patternName)
 	}
 	// the * indicates that the route is open-ended
@@ -45,8 +45,8 @@ func CompilePathRegex(pattern string) (string, []Param) {
 func ParsePath(path string, rePattern *regexp.Regexp, params []Param) []Param {
 	matches := rePattern.FindStringSubmatch(path)
 	for i, p := range params {
-		subNameIndex := rePattern.SubexpIndex(p.name)
-		params[i].value = matches[subNameIndex]
+		subNameIndex := rePattern.SubexpIndex(p.Name)
+		params[i].Value = matches[subNameIndex]
 	}
 	return params
 }

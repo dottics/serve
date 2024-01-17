@@ -20,8 +20,8 @@ func GetParam(c context.Context, name string) string {
 	switch v := val.(type) {
 	case []Param:
 		for _, p := range v {
-			if p.name == name {
-				return p.value
+			if p.Name == name {
+				return p.Value
 			}
 		}
 	}
