@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"net/http"
@@ -74,19 +73,19 @@ import (
 
 func ExtractAuthToken(r *http.Request) error {
 	bearer := r.Header.Get("authorization")
-	fmt.Println("e1", bearer)
+	//fmt.Println("e1", bearer)
 	if len(bearer) < 10 {
 		return errors.New("authorization token has a invalid length")
 	}
 	tokenString := bearer[7:]
 
 	token, err := ParseJWT(tokenString)
-	fmt.Println("e", token, err)
+	//fmt.Println("e", token, err)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("e2", err)
+	//fmt.Println("e2", err)
 	err = ValidateToken(token)
 	if err != nil {
 		return err
