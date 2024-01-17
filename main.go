@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/dottics/serve/auth"
 	"github.com/dottics/serve/openapi"
 	"github.com/dottics/serve/servemux"
 	"log"
@@ -22,7 +23,7 @@ func openAPI(c context.Context, w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := servemux.NewMux()
 	mux.Use(servemux.CORS(nil, nil))
-	//mux.Use(auth.Middleware)
+	mux.Use(auth.Middleware)
 	// whitelisted
 	mux.GetWhitelisted("/docs*", openAPI)
 

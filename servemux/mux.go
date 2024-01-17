@@ -80,6 +80,9 @@ func (m *Mux) handlerContext(route *Route, r *http.Request) context.Context {
 		params := ParsePath(r.URL.Path, route.patternRegex, route.params)
 		ctx = context.WithValue(ctx, "params", params)
 		ctx = context.WithValue(ctx, "whitelisted", route.whitelisted)
+	} else {
+		ctx = context.WithValue(ctx, "params", make([]Param, 0))
+		ctx = context.WithValue(ctx, "whitelisted", false)
 	}
 	return ctx
 }

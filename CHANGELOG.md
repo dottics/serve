@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2024-01-17
+
+### Updated
+
+- Added context defaults for the additional packages, such as `auth`'s
+  whitelisted and `servemux`'s params.
+
 ## [0.0.4] - 2024-01-17
 
 - Updated the `ContextMiddleware` and `ContextHandlerFunc` to use the context

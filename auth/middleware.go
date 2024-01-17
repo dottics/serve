@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
 func Middleware(c context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
+	fmt.Println(c.Value("whitelisted"))
 	whitelisted := c.Value("whitelisted").(bool)
 	if whitelisted {
 		return false, nil
