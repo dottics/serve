@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-func Params(c *context.Context) []Param {
-	val := (*c).Value("params")
+func Params(c context.Context) []Param {
+	val := c.Value("params")
 	if val == nil {
 		return []Param{}
 	}
 	return val.([]Param)
 }
 
-func GetParam(c *context.Context, name string) string {
-	val := (*c).Value("params")
+func GetParam(c context.Context, name string) string {
+	val := c.Value("params")
 	if val == nil {
 		return ""
 	}

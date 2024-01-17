@@ -11,11 +11,11 @@ import (
 // The context contains all the request URL params:
 //
 // - see: Params and GetParam
-type ContextHandlerFunc func(*context.Context, http.ResponseWriter, *http.Request)
+type ContextHandlerFunc func(context.Context, http.ResponseWriter, *http.Request)
 
 // ContextMiddleware return a stop bool to indicate if the middleware should
 // stop and exit. Where true == stop.
-type ContextMiddleware func(*context.Context, http.ResponseWriter, *http.Request) (bool, http.HandlerFunc)
+type ContextMiddleware func(context.Context, http.ResponseWriter, *http.Request) (bool, http.HandlerFunc)
 
 // Route is the structure of a route. patternRegex is the regex pattern used to
 // match the request URL with the route pattern.
@@ -46,25 +46,25 @@ func NewMux() *Mux {
 	}
 	// run any request, as all routes will match the default path of "/"
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// find the route handler
 		route := m.findHandler(r)
-		if route == nil {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			_, _ = w.Write([]byte(`Method not allowed`))
-			return // ensure handler function terminates
-		}
-		con := m.handlerContext(*route, r)
+		// create the handler context
+		con := m.handlerContext(route, r)
 		stop, handler := m.runMiddleware(con, w, r)
-		if !stop {
-			route.handler(con, w, r)
-			return // ensure handler function terminates
-		}
 		// middleware stops execution then run the handler provided by the
 		// middleware
 		if stop && handler != nil {
 			handler(w, r)
 			return
 		}
-		// default if no middleware stop handler is provided
+		// if the route exists and middleware did not stop execution run the
+		// handler
+		if !stop && route != nil {
+			route.handler(con, w, r)
+			return // ensure handler function terminates
+		}
+		// default if no middleware stop handler is provided or if the route
+		// does not exist
 		w.WriteHeader(405)
 		_, _ = w.Write([]byte(`Method Not Allowed`))
 		return // ensure handler function terminates
@@ -74,12 +74,14 @@ func NewMux() *Mux {
 
 // handlerContext creates the context and populates with the basic context
 // values such as: URL params; whitelisted.
-func (m *Mux) handlerContext(route Route, r *http.Request) *context.Context {
+func (m *Mux) handlerContext(route *Route, r *http.Request) context.Context {
 	ctx := context.Background()
-	params := ParsePath(r.URL.Path, route.patternRegex, route.params)
-	ctx = context.WithValue(ctx, "params", params)
-	ctx = context.WithValue(ctx, "whitelisted", route.whitelisted)
-	return &ctx
+	if route != nil {
+		params := ParsePath(r.URL.Path, route.patternRegex, route.params)
+		ctx = context.WithValue(ctx, "params", params)
+		ctx = context.WithValue(ctx, "whitelisted", route.whitelisted)
+	}
+	return ctx
 }
 
 // findHandler looks at the declared handlers and finds the best match for the
@@ -120,7 +122,7 @@ func (m *Mux) Use(middleware ContextMiddleware) {
 }
 
 // runMiddleware runs the sequence of middleware functions.
-func (m *Mux) runMiddleware(c *context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
+func (m *Mux) runMiddleware(c context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
 	for _, mid := range m.middleware {
 		stop, handler := mid(c, w, r)
 		if stop {

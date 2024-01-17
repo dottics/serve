@@ -17,7 +17,7 @@ func CORS(headers http.Header, payload []byte) ContextMiddleware {
 	if payload == nil {
 		payload = []byte(`{}`)
 	}
-	return func(c *context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
+	return func(c context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
 		if r.Method == "OPTIONS" {
 			for k, v := range headers {
 				w.Header().Set(k, strings.Join(v, "; "))

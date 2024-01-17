@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2024-01-17
+
+- Updated the `ContextMiddleware` and `ContextHandlerFunc` to use the context
+  and not the value pointed to by the context. This is to follow best practices
+  of using the context value directly.
+
 ## [0.0.3] - 2024-01-10
 
 ### Updated

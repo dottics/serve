@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func Middleware(c *context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
-	whitelisted := (*c).Value("whitelisted").(bool)
+func Middleware(c context.Context, w http.ResponseWriter, r *http.Request) (bool, http.HandlerFunc) {
+	whitelisted := c.Value("whitelisted").(bool)
 	if whitelisted {
 		return false, nil
 	}

@@ -9,19 +9,19 @@ import (
 	"net/http"
 )
 
-func Home(c *context.Context, w http.ResponseWriter, r *http.Request) {
+func Home(c context.Context, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("param", servemux.GetParam(c, "uuid"))
 	w.WriteHeader(204)
 	_, _ = w.Write([]byte(`home`))
 }
 
-func openAPI(c *context.Context, w http.ResponseWriter, r *http.Request) {
+func openAPI(c context.Context, w http.ResponseWriter, r *http.Request) {
 	openapi.Handler(w, r)
 }
 
 func main() {
 	mux := servemux.NewMux()
-	//mux.Use(servemux.CORS(nil, nil))
+	mux.Use(servemux.CORS(nil, nil))
 	//mux.Use(auth.Middleware)
 	// whitelisted
 	mux.GetWhitelisted("/docs*", openAPI)
