@@ -120,7 +120,7 @@ func ValidateToken(token *jwt.Token) error {
 	// check the platform audience
 	platformFound := false
 	for _, aud := range auds {
-		if aud == "Platform-DEV" {
+		if aud == "" {
 			platformFound = true
 		}
 	}
